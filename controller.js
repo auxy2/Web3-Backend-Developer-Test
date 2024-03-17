@@ -3,18 +3,17 @@ const axios = require("axios");
 exports.fiatToUSDT = async (req, res) => {
   const { currency, fiatAmount } = req.body;
   console.log(req.body);
-  localStorage.setItem("preBalance", "1");
 
   try {
     const response = await axios(
       `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies={${currency}}`
     );
     const currencyToLower = currency.toLowerCase();
-    const amountInUSDT = response.data.tether[currencyToLower];
+    var amountInUSDT = response.data.tether[currencyToLower];
     amountInUSDT *= fiatAmount;
     const preBalance = localStorage.getItem("preBalance");
     let storageBalance;
-    if (preBalance === "1" && currency !== "USD") {
+    if (currency !== "USD") {
       storageBalance = localStorage.getItem("balance");
       const response = await axios(
         `https://api.coingecko.com/api/v3/simple/price?ids=usd&vs_currencies=${currency}`

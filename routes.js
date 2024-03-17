@@ -3,7 +3,7 @@ const getusdt = require("./controller");
 
 const router = express.Router();
 
-router.get("/CovertFromUsdt", getusdt.USDTToFiat);
-router.get("/ConvertToUsdt", getusdt.fiatToUSDT);
+router.post("/CovertFromUsdt", getusdt.USDTToFiat);
+router.post("/ConvertToUsdt", getusdt.fiatToUSDT);
 
 module.exports = router;
