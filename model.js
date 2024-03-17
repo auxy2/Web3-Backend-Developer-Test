@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-BalanceSchema = mongoose.Schema({
+const BalanceSchema = new mongoose.Schema({
   balance: String,
 });
 

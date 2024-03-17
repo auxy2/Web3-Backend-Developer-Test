@@ -1,4 +1,5 @@
 const axios = require("axios");
+const Balance = require("./model");
 
 exports.fiatToUSDT = async (req, res) => {
   const { currency, fiatAmount } = req.body;
