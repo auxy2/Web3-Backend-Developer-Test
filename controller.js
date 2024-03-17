@@ -1,35 +1,39 @@
 const axios = require("axios");
 const Balance = require("./model");
-
+User: "Web3.0Dev",
+  (exports.loadBalance = async (req, res) => {
+    const balance = await Balance.findOne({ User: "Web3.0Dev" });
+    res.status(200).json({
+      balance,
+    });
+  });
 exports.fiatToUSDT = async (req, res) => {
   const { currency, fiatAmount } = req.body;
   console.log(req.body);
+  const availableBalance = await Balance.findOne({ User: "Web3.0Dev" });
+  console.log("Uper", availableBalance.balance);
 
   try {
-    const response = await axios(
-      `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies={${currency}}`
+    const tetherResponse = await axios(
+      `https://api.coincap.io/v2/assets/tether`
     );
-    const currencyToLower = currency.toLowerCase();
-    var amountInUSDT = response.data.tether[currencyToLower];
-    amountInUSDT *= fiatAmount;
-    const preBalance = localStorage.getItem("preBalance");
-    let storageBalance;
-    if (currency !== "USD") {
-      storageBalance = localStorage.getItem("balance");
-      const response = await axios(
-        `https://api.coingecko.com/api/v3/simple/price?ids=usd&vs_currencies=${currency}`
-      );
-      const amountInLocalCurrency = response.data.tether[currencyToLower];
-      storageBalance += amountInLocalCurrency;
-      localStorage.setItem("balance", storageBalance.toString());
-    } else {
-      storageBalance += fiatAmount;
-      localStorage.setItem("balance", storageBalance.toString());
-    }
+    const exchangeRatesResponse = await axios(
+      `https://api.exchangeratesapi.net/v1/exchange-rates/latest?access_key=CKTQNCaTsT3DKXLf`
+    );
+    const usdtRateToUSD = tetherResponse.data.data.priceUsd;
+    const usdRate = exchangeRatesResponse.data.rates[currency];
+    const convertToUsd = usdRate * fiatAmount;
+    const amount = convertToUsd * usdtRateToUSD;
 
+    const newbalance =
+      parseFloat(availableBalance.balance) + parseFloat(amount);
+    availableBalance.balance = newbalance.toLocaleString();
+    await availableBalance.save();
+
+    console.log(newbalance.toLocaleString());
     res.status(200).json({
-      USDTRate: amountInUSDT,
-      balance: localStorage.getItem("balance"),
+      newbalance,
+      rate: amount,
     });
   } catch (error) {
     console.log(error.message);
@@ -37,34 +41,36 @@ exports.fiatToUSDT = async (req, res) => {
 };
 
 exports.USDTToFiat = async (req, res) => {
-  const { currency, usdtAmount } = req.body;
+  const { currency, USDTAmount } = req.body;
 
-  console.log("its here");
+  console.log(req.body);
+
+  const availableBalance = await Balance.findOne({ User: "Web3.0Dev" });
+  console.log("Uper", availableBalance.balance);
 
   try {
-    const response = await axios(
-      `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=${currency}`
+    const tetherResponse = await axios(
+      `https://api.coincap.io/v2/assets/tether`
     );
-    const currencyToLower = currency.toLowerCase();
-    var amountInLocalCurrency = response.data.tether[currencyToLower];
-    amountInLocalCurrency *= usdtAmount;
-    const storageBalance = localStorage.get("balace");
+    const exchangeRatesResponse = await axios(
+      `https://api.exchangeratesapi.net/v1/exchange-rates/latest?access_key=CKTQNCaTsT3DKXLf`
+    );
+    const usdtRateToUSD = tetherResponse.data.data.priceUsd;
 
-    if (currency !== "USD") {
-      const response = await axios(
-        `https://api.coingecko.com/api/v3/simple/price?ids=usd&vs_currencies=${currency}`
-      );
-      const amountInLocalCurrency = response.data.tether[currencyToLower];
-      storageBalance -= amountInLocalCurrency;
-      localStorage.setItem("balance", storageBalance.toString());
-    } else {
-      storageBalance -= amountInLocalCurrency;
-      localStorage.setItem("balance", storageBalance.toString());
-    }
+    const convertToUsd = usdtRateToUSD * USDTAmount;
+    const usdRate = exchangeRatesResponse.data.rates[currency];
 
+    const amount = convertToUsd * usdRate;
+
+    const newbalance =
+      parseFloat(availableBalance.balance) - parseFloat(amount);
+    availableBalance.balance = newbalance.toLocaleString();
+    await availableBalance.save();
+
+    console.log(newbalance.toLocaleString());
     res.status(200).json({
-      fiatRate: amountInLocalCurrency,
-      balance: localStorage.getItem("balance"),
+      newbalance,
+      rate: amount,
     });
   } catch (error) {
     console.log(error.message);
