@@ -1,13 +1,43 @@
 const axios = require("axios");
 
+exports.fiatToUSDT = async (req, res) => {
+  const { currency, fiatAmount } = req.body;
 
-export 
+  localStorage.setItem("preBalance", "1");
 
+  try {
+    const response = await axios(
+      `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies={${currency}}`
+    );
+    const currencyToLower = currency.toLowerCase();
+    const amountInUSDT = response.data.tether[currencyToLower];
+    amountInUSDT *= fiatAmount;
+    const preBalance = localStorage.getItem("preBalance");
+    let storageBalance;
+    if (preBalance === "1" && currency !== "USD") {
+      storageBalance = localStorage.getItem("balance");
+      const response = await axios(
+        `https://api.coingecko.com/api/v3/simple/price?ids=usd&vs_currencies=${currency}`
+      );
+      const amountInLocalCurrency = response.data.tether[currencyToLower];
+      storageBalance += amountInLocalCurrency;
+      localStorage.setItem("balance", storageBalance.toString());
+    } else {
+      storageBalance += fiatAmount;
+      localStorage.setItem("balance", storageBalance.toString());
+    }
 
+    res.status(200).json({
+      USDTRate: amountInUSDT,
+      balance: localStorage.getItem("balance"),
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 
 exports.USDTToFiat = async (req, res) => {
-  //   const { currency, usdtAmount, balance } = req.body;
-  const currency = "USD";
+  const { currency, usdtAmount } = req.body;
 
   try {
     const response = await axios(
@@ -15,9 +45,8 @@ exports.USDTToFiat = async (req, res) => {
     );
     const currencyToLower = currency.toLowerCase();
     const amountInLocalCurrency = response.data.tether[currencyToLower];
-    const fiatAmount = amountInLocalCurrency * 10;
+    amountInLocalCurrency *= usdtAmount;
     const storageBalance = localStorage.get("balace");
-
 
     if (currency !== "USD") {
       const response = await axios(
@@ -27,13 +56,13 @@ exports.USDTToFiat = async (req, res) => {
       storageBalance -= amountInLocalCurrency;
       localStorage.setItem("balance", storageBalance.toString());
     } else {
-     storageBalance -= fiatAmount
+      storageBalance -= amountInLocalCurrency;
       localStorage.setItem("balance", storageBalance.toString());
     }
 
     res.status(200).json({
-      fiatAmount,
-      balance: localStorage.getItem("balance")
+      fiatRate: amountInLocalCurrency,
+      balance: localStorage.getItem("balance"),
     });
   } catch (error) {
     console.log(error.message);
