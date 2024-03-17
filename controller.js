@@ -46,7 +46,7 @@ exports.USDTToFiat = async (req, res) => {
       `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=${currency}`
     );
     const currencyToLower = currency.toLowerCase();
-    const amountInLocalCurrency = response.data.tether[currencyToLower];
+    var amountInLocalCurrency = response.data.tether[currencyToLower];
     amountInLocalCurrency *= usdtAmount;
     const storageBalance = localStorage.get("balace");
 
