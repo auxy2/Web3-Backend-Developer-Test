@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const mongoose = require("mongoose");
 
 const corsOptions = {
   origin: "*",
@@ -15,10 +16,13 @@ const app = express();
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.personal_cloud, {
-      family: 4,
-      useNewUrlParser: true,
-    });
+    const conn = await mongoose.connect(
+      "mongodb+srv://personalemail8000:SirUPUcchBtIu3wM@skyshow.yqgndns.mongodb.net/Web3Teest",
+      {
+        family: 4,
+        useNewUrlParser: true,
+      }
+    );
     console.log(`MongoDB connected: ${conn.connection.host}`);
   } catch (err) {
     console.log(err.message);
@@ -37,6 +41,8 @@ app.get("/", (req, res, next) => {
 });
 app.use("/api/V1/test", controlerRouter);
 
-app.listen(port, () => {
-  console.log(`server runing on ${port}`);
+connectDB().then(() => {
+  app.listen(port, () => {
+    console.log(`Server Runing On Port: ${port}`);
+  });
 });
