@@ -1,24 +1,41 @@
 const axios = require("axios");
 
-exports.fiatToUSDT = async (req, res, next) => {
-  const { currency, usdtAmount } = req.body;
+
+export 
+
+
+
+exports.USDTToFiat = async (req, res) => {
+  //   const { currency, usdtAmount, balance } = req.body;
+  const currency = "USD";
 
   try {
-    // Here you would typically call an API to convert fiat to USDT
-    // For the sake of example, let's assume we're using a hypothetical API
-
-    // Make a request to the API
     const response = await axios(
       `https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=${currency}`
     );
+    const currencyToLower = currency.toLowerCase();
+    const amountInLocalCurrency = response.data.tether[currencyToLower];
+    const fiatAmount = amountInLocalCurrency * 10;
+    const storageBalance = localStorage.get("balace");
 
-    // Assuming the API returns the converted amount in USDT
-    const amountInUSDT = response.data;
+
+    if (currency !== "USD") {
+      const response = await axios(
+        `https://api.coingecko.com/api/v3/simple/price?ids=usd&vs_currencies=${currency}`
+      );
+      const amountInLocalCurrency = response.data.tether[currencyToLower];
+      storageBalance -= amountInLocalCurrency;
+      localStorage.setItem("balance", storageBalance.toString());
+    } else {
+     storageBalance -= fiatAmount
+      localStorage.setItem("balance", storageBalance.toString());
+    }
 
     res.status(200).json({
-      data: amountInUSDT,
+      fiatAmount,
+      balance: localStorage.getItem("balance")
     });
   } catch (error) {
-    res.send("Error converting fiat to USDT");
+    console.log(error.message);
   }
 };
