@@ -1,4 +1,12 @@
 const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+
+const corsOptions = {
+  origin: "*",
+  methods: "*",
+  allowedHeaders: "*",
+};
 
 const controlerRouter = require("./routes");
 
@@ -7,6 +15,7 @@ const app = express();
 
 app.use(express.json());
 app.use(bodyParser.json());
+app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.enable("trust proxy");
 

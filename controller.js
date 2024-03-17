@@ -2,7 +2,7 @@ const axios = require("axios");
 
 exports.fiatToUSDT = async (req, res) => {
   const { currency, fiatAmount } = req.body;
-
+  console.log(req.body);
   localStorage.setItem("preBalance", "1");
 
   try {
@@ -38,6 +38,8 @@ exports.fiatToUSDT = async (req, res) => {
 
 exports.USDTToFiat = async (req, res) => {
   const { currency, usdtAmount } = req.body;
+
+  console.log("its here");
 
   try {
     const response = await axios(
