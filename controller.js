@@ -27,9 +27,9 @@ exports.fiatToUSDT = async (req, res) => {
     const newbalance =
       parseFloat(availableBalance.balance) + parseFloat(amount);
     availableBalance.balance = newbalance.toLocaleString();
-    await availableBalance.save();
 
-    console.log(newbalance.toLocaleString());
+    // await availableBalance.save();
+
     res.status(200).json({
       newbalance,
       rate: amount,
@@ -40,32 +40,39 @@ exports.fiatToUSDT = async (req, res) => {
 };
 
 exports.USDTToFiat = async (req, res) => {
-  const { currency, USDTAmount } = req.body;
+  const { currency, USDTAmount, ToUSDT = "USDT" } = req.body;
+  console.log(req.body);
 
   const availableBalance = await Balance.findOne({ User: "Web3.0Dev" });
 
   try {
     const tetherResponse = await axios(
-      `https://api.coincap.io/v2/assets/tether`
+      `https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=${currency}`
     );
-    const exchangeRatesResponse = await axios(
-      `https://api.exchangeratesapi.net/v1/exchange-rates/latest?access_key=CKTQNCaTsT3DKXLf`
+    const exchangeRatesToUSD = await axios(
+      `https://min-api.cryptocompare.com/data/price?fsym=${currency}&tsyms=USD`
     );
-    const usdtRateToUSD = tetherResponse.data.data.priceUsd;
 
-    const convertToUsd = usdtRateToUSD * USDTAmount;
-    const usdRate = exchangeRatesResponse.data.rates[currency];
+    const usdtRateToFiat = tetherResponse.data[currency];
 
-    const amount = convertToUsd * usdRate;
+    const currencyToUsdRate = exchangeRatesToUSD.data.USD;
+
+    console.log("tetherResponse", usdtRateToFiat, currencyToUsdRate);
+
+    /////// currencyAmount RATE //////////
+    const currencyAmount = usdtRateToFiat * USDTAmount;
+
+    const amount = currencyToUsdRate * currencyAmount; //good;
 
     const newbalance =
       parseFloat(availableBalance.balance) - parseFloat(amount);
     availableBalance.balance = newbalance.toLocaleString();
-    await availableBalance.save();
+    // await availableBalance.save();
+    console.log("amount", amount, "currencyAmount", currencyAmount, newbalance);
 
     res.status(200).json({
       newbalance,
-      rate: amount,
+      rate: currencyAmount,
     });
   } catch (error) {
     console.log(error.message);
