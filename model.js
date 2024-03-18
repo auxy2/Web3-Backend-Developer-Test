@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const BalanceSchema = new mongoose.Schema({
-  balance: String,
+  balance: Number,
   User: String,
 });
 

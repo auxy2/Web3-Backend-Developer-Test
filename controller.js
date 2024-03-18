@@ -10,29 +10,45 @@ User: "Web3.0Dev",
   });
 exports.fiatToUSDT = async (req, res) => {
   const { currency, fiatAmount } = req.body;
+
+  console.log(req.body);
+
   const availableBalance = await Balance.findOne({ User: "Web3.0Dev" });
 
   try {
-    const tetherResponse = await axios(
-      `https://api.coincap.io/v2/assets/tether`
+    const fiatResponse = await axios(
+      `https://min-api.cryptocompare.com/data/price?fsym=${currency}&tsyms=USDT`
     );
-    const exchangeRatesResponse = await axios(
-      `https://api.exchangeratesapi.net/v1/exchange-rates/latest?access_key=CKTQNCaTsT3DKXLf`
+    const exchangeRatesToUSD = await axios(
+      `https://min-api.cryptocompare.com/data/price?fsym=${currency}&tsyms=USD`
     );
-    const usdtRateToUSD = tetherResponse.data.data.priceUsd;
-    const usdRate = exchangeRatesResponse.data.rates[currency];
-    const convertToUsd = usdRate * fiatAmount;
-    const amount = convertToUsd * usdtRateToUSD;
+
+    const usdtRateToFiat = fiatResponse.data.USDT;
+
+    const currencyToUsdRate = exchangeRatesToUSD.data.USD;
+
+    console.log("1 tetherResponse", usdtRateToFiat, currencyToUsdRate);
+
+    /////// currencyAmount RATE //////////
+    const currencyAmount = usdtRateToFiat * fiatAmount;
+
+    const amount = currencyToUsdRate * currencyAmount; //good;
 
     const newbalance =
       parseFloat(availableBalance.balance) + parseFloat(amount);
     availableBalance.balance = newbalance.toLocaleString();
-
-    // await availableBalance.save();
+    await availableBalance.save();
+    console.log(
+      " 1amount",
+      amount,
+      "currencyAmount",
+      currencyAmount,
+      newbalance
+    );
 
     res.status(200).json({
       newbalance,
-      rate: amount,
+      rate: currencyAmount,
     });
   } catch (error) {
     console.log(error.message);
