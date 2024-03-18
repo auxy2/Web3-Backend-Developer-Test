@@ -2,7 +2,9 @@ const axios = require("axios");
 const Balance = require("./model");
 User: "Web3.0Dev",
   (exports.loadBalance = async (req, res) => {
-    const balance = await Balance.findOne({ User: "Web3.0Dev" });
+    const user = await Balance.findOne({ User: "Web3.0Dev" });
+    const balance = user.balance;
+    console.log(balance);
     res.status(200).json({
       balance,
     });
