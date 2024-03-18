@@ -4,16 +4,13 @@ User: "Web3.0Dev",
   (exports.loadBalance = async (req, res) => {
     const user = await Balance.findOne({ User: "Web3.0Dev" });
     const balance = user.balance;
-    console.log(balance);
     res.status(200).json({
       balance,
     });
   });
 exports.fiatToUSDT = async (req, res) => {
   const { currency, fiatAmount } = req.body;
-  console.log(req.body);
   const availableBalance = await Balance.findOne({ User: "Web3.0Dev" });
-  console.log("Uper", availableBalance.balance);
 
   try {
     const tetherResponse = await axios(
@@ -45,10 +42,7 @@ exports.fiatToUSDT = async (req, res) => {
 exports.USDTToFiat = async (req, res) => {
   const { currency, USDTAmount } = req.body;
 
-  console.log(req.body);
-
   const availableBalance = await Balance.findOne({ User: "Web3.0Dev" });
-  console.log("Uper", availableBalance.balance);
 
   try {
     const tetherResponse = await axios(
@@ -69,7 +63,6 @@ exports.USDTToFiat = async (req, res) => {
     availableBalance.balance = newbalance.toLocaleString();
     await availableBalance.save();
 
-    console.log(newbalance.toLocaleString());
     res.status(200).json({
       newbalance,
       rate: amount,
